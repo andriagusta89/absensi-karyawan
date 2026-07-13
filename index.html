@@ -133,8 +133,52 @@
       </div>
       <div id="msgAbsen" class="msg"></div>
       <button class="btn btn-primary" id="btnKirim" onclick="kirimAbsen()" type="button" disabled>Kirim Absen</button>
+      <button class="btn btn-secondary" onclick="bukaBiodata()" type="button">Update Biodata</button>
       <button class="btn btn-secondary" onclick="logoutKaryawan()" type="button">Keluar / Ganti Akun</button>
       <div class="footer-link"><a onclick="showView('loginAdminView')">Login Admin</a></div>
+    </div>
+  </div>
+
+  <!-- ============ 2b. UPDATE BIODATA KARYAWAN ============ -->
+  <div id="biodataView" style="display:none;">
+    <header>
+      <h1>Update Biodata</h1>
+      <p id="biodataSubGreeting"></p>
+    </header>
+    <div class="container">
+      <div id="biodataLocked" class="card" style="display:none;">
+        <div class="msg warn" style="display:block;">Biodata sudah dikonfirmasi dan terkunci. Kalau ada data yang perlu diubah, hubungi admin untuk membuka kunci.</div>
+        <label>Nama</label>
+        <div id="viewNama" style="margin-bottom:14px; color:#374151;">-</div>
+        <label>NIK KTP</label>
+        <div id="viewNik" style="margin-bottom:14px; color:#374151;">-</div>
+        <label>Alamat</label>
+        <div id="viewAlamat" style="margin-bottom:14px; color:#374151;">-</div>
+        <label>No. HP</label>
+        <div id="viewHp" style="margin-bottom:14px; color:#374151;">-</div>
+        <div id="viewFotoKtpWrap" style="display:none;">
+          <label>Foto KTP</label>
+          <a id="viewFotoKtpLink" href="#" target="_blank" style="color:#0f766e; font-size:13px;">Lihat foto KTP</a>
+        </div>
+      </div>
+
+      <div id="biodataEditable" class="card" style="display:none;">
+        <label>NIK KTP</label>
+        <input type="text" id="bNik" maxlength="16" inputmode="numeric">
+        <label>Foto KTP</label>
+        <input type="file" id="bFotoKtp" accept="image/*" style="display:block; margin-bottom:16px;">
+        <label>Alamat Tinggal</label>
+        <input type="text" id="bAlamat">
+        <label>No. HP</label>
+        <input type="text" id="bHp" inputmode="tel">
+        <div id="biodataMsg" class="msg"></div>
+        <p style="font-size:12px; color:#92400e; background:#fef3c7; padding:10px 12px; border-radius:8px;">
+          Perhatian: setelah disimpan, data ini akan <b>terkunci otomatis</b> dan tidak bisa diedit lagi kecuali admin membuka kuncinya. Pastikan data sudah benar sebelum menyimpan.
+        </p>
+        <button class="btn btn-primary" onclick="simpanBiodata()" type="button">Simpan &amp; Kunci Biodata</button>
+      </div>
+
+      <button class="btn btn-secondary" onclick="showView('absenView')" type="button">Kembali ke Absen</button>
     </div>
   </div>
 
@@ -183,7 +227,7 @@
         <div class="card">
           <div class="table-wrap">
             <table>
-              <thead><tr><th>ID</th><th>Nama</th><th>NIK KTP</th><th>No HP</th><th>Jabatan</th><th>Status</th><th>Foto KTP</th><th>Aksi</th></tr></thead>
+              <thead><tr><th>ID</th><th>Nama</th><th>NIK KTP</th><th>No HP</th><th>Jabatan</th><th>Status</th><th>Foto KTP</th><th>Biodata</th><th>Aksi</th></tr></thead>
               <tbody id="karyawanBody"></tbody>
             </table>
           </div>
@@ -242,7 +286,7 @@
     // window.location seperti waktu masih dibuka langsung dari domain Apps Script.
     //
     // >>> GANTI baris di bawah ini dengan URL deployment Apps Script kamu <<<
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbywwAHBY3OPNV1qDe0NawBNX3CEW6DkOSSViGnYtcGXyQjyh0WfO_5lA2ahtcP-hF0/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyK-2syHIQrqCX9rEjrP-TyoWX07jhxSxKVXSlBYAm58ZyxSeiMrZBGbtB5xYU-zf0/exec';
 
     function callServer(action, params) {
       return fetch(SCRIPT_URL, {
@@ -255,7 +299,7 @@
 
     // ================== NAVIGASI ANTAR TAMPILAN (tanpa reload halaman) ==================
     function showView(id) {
-      ['loginKaryawanView', 'absenView', 'loginAdminView', 'adminView'].forEach(function (v) {
+      ['loginKaryawanView', 'absenView', 'biodataView', 'loginAdminView', 'adminView'].forEach(function (v) {
         document.getElementById(v).style.display = (v === id) ? 'block' : 'none';
       });
     }
@@ -318,6 +362,80 @@
       document.getElementById('idKaryawan').value = '';
       document.getElementById('pin').value = '';
       showView('loginKaryawanView');
+    }
+
+    // ================== UPDATE BIODATA (edit sekali, lalu terkunci) ==================
+    let fotoKtpBaruBase64 = null;
+
+    function bukaBiodata() {
+      showView('biodataView');
+      document.getElementById('biodataSubGreeting').textContent = karyawan.idKaryawan + ' - ' + karyawan.nama;
+      document.getElementById('biodataLocked').style.display = 'none';
+      document.getElementById('biodataEditable').style.display = 'none';
+      fotoKtpBaruBase64 = null;
+
+      callServer('getBiodataKaryawan', { idKaryawan: karyawan.idKaryawan }).then(function (res) {
+        if (!res.success) {
+          alert(res.message);
+          showView('absenView');
+          return;
+        }
+        const d = res.data;
+        if (d.biodataTerkunci) {
+          document.getElementById('biodataLocked').style.display = 'block';
+          document.getElementById('viewNama').textContent = d.nama || '-';
+          document.getElementById('viewNik').textContent = d.nikKtp || '-';
+          document.getElementById('viewAlamat').textContent = d.alamat || '-';
+          document.getElementById('viewHp').textContent = d.noHp || '-';
+          if (d.fotoKtpUrl) {
+            document.getElementById('viewFotoKtpWrap').style.display = 'block';
+            document.getElementById('viewFotoKtpLink').href = d.fotoKtpUrl;
+          }
+        } else {
+          document.getElementById('biodataEditable').style.display = 'block';
+          document.getElementById('bNik').value = d.nikKtp || '';
+          document.getElementById('bAlamat').value = d.alamat || '';
+          document.getElementById('bHp').value = d.noHp || '';
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const fotoKtpInput = document.getElementById('bFotoKtp');
+      if (fotoKtpInput) {
+        fotoKtpInput.addEventListener('change', function (e) {
+          const file = e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = function (ev) { fotoKtpBaruBase64 = ev.target.result; };
+          reader.readAsDataURL(file);
+        });
+      }
+    });
+
+    function simpanBiodata() {
+      const msg = document.getElementById('biodataMsg');
+      const payload = {
+        nikKtp: document.getElementById('bNik').value.trim(),
+        alamat: document.getElementById('bAlamat').value.trim(),
+        noHp: document.getElementById('bHp').value.trim()
+      };
+      if (fotoKtpBaruBase64) payload.fotoKtpBase64 = fotoKtpBaruBase64;
+
+      callServer('updateBiodataKaryawan', { idKaryawan: karyawan.idKaryawan, payload: payload })
+        .then(function (res) {
+          msg.className = res.success ? 'msg ok' : 'msg error';
+          msg.textContent = res.message;
+          msg.style.display = 'block';
+          if (res.success) {
+            setTimeout(function () { bukaBiodata(); }, 1200);
+          }
+        })
+        .catch(function (err) {
+          msg.className = 'msg error';
+          msg.textContent = 'Gagal: ' + err.message;
+          msg.style.display = 'block';
+        });
     }
 
     let absenSudahInit = false;
@@ -505,14 +623,24 @@
           const badge = r.statusAktif === 'AKTIF' ? 'ok' : 'bad';
           const aksiLabel = r.statusAktif === 'AKTIF' ? 'Nonaktifkan' : 'Aktifkan';
           const aksiTarget = r.statusAktif === 'AKTIF' ? 'NONAKTIF' : 'AKTIF';
+          const biodataBadge = r.biodataTerkunci ? 'bad' : 'ok';
+          const biodataLabel = r.biodataTerkunci ? 'Terkunci' : 'Bisa Diedit';
+          const tombolBukaKunci = r.biodataTerkunci
+            ? `<button class="btn secondary inline" onclick="bukaKunciBiodataAdmin('${r.idKaryawan}')" type="button">Buka Kunci</button>`
+            : '';
           tbody.innerHTML += `<tr>
             <td>${r.idKaryawan}</td><td>${r.nama}</td><td>${r.nikKtp}</td><td>${r.noHp}</td><td>${r.jabatan}</td>
             <td><span class="badge ${badge}">${r.statusAktif}</span></td>
             <td>${r.fotoKtpUrl ? `<a class="link-photo" href="${r.fotoKtpUrl}" target="_blank">Lihat</a>` : '-'}</td>
+            <td><span class="badge ${biodataBadge}">${biodataLabel}</span> ${tombolBukaKunci}</td>
             <td><button class="btn secondary inline" onclick="toggleStatus('${r.idKaryawan}','${aksiTarget}')" type="button">${aksiLabel}</button></td>
           </tr>`;
         });
       });
+    }
+
+    function bukaKunciBiodataAdmin(id) {
+      callServer('bukaKunciBiodata', { idKaryawan: id }).then(loadKaryawan);
     }
 
     function toggleStatus(id, statusBaru) {
