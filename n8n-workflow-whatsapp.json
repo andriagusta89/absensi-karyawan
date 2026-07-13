@@ -1,0 +1,157 @@
+{
+  "name": "Absensi - Notifikasi WhatsApp",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "absensi-notif",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-node",
+      "name": "Webhook Absensi",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [200, 300],
+      "webhookId": "absensi-notif"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "cond-admin",
+              "leftValue": "={{ $json.body.noWaAdmin }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-admin",
+      "name": "Ada No WA Admin?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [460, 220]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:3000/send-message",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $json.body.noWaAdmin }}\",\n  \"message\": \"{{ $json.body.pesanAdmin }}\"\n}",
+        "options": {}
+      },
+      "id": "http-admin",
+      "name": "Kirim WA ke Admin",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [700, 160],
+      "notes": "GANTI url ini dengan endpoint bridge WhatsApp kamu (mis. Node.js whatsapp-web.js bridge yang sudah ada), atau ganti seluruh node ini dengan node WhatsApp Cloud API (Meta) jika pakai jalur resmi."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "cond-karyawan",
+              "leftValue": "={{ $json.body.noWaKaryawan }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-karyawan",
+      "name": "Ada No WA Karyawan?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [460, 420]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:3000/send-message",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $json.body.noWaKaryawan }}\",\n  \"message\": \"{{ $json.body.pesanKaryawan }}\"\n}",
+        "options": {}
+      },
+      "id": "http-karyawan",
+      "name": "Kirim WA ke Karyawan",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [700, 460],
+      "notes": "GANTI url ini dengan endpoint bridge WhatsApp kamu, sama seperti node 'Kirim WA ke Admin'."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true\n}",
+        "options": {}
+      },
+      "id": "respond-node",
+      "name": "Respond OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [960, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Absensi": {
+      "main": [
+        [
+          { "node": "Ada No WA Admin?", "type": "main", "index": 0 },
+          { "node": "Ada No WA Karyawan?", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Ada No WA Admin?": {
+      "main": [
+        [ { "node": "Kirim WA ke Admin", "type": "main", "index": 0 } ],
+        []
+      ]
+    },
+    "Kirim WA ke Admin": {
+      "main": [
+        [ { "node": "Respond OK", "type": "main", "index": 0 } ]
+      ]
+    },
+    "Ada No WA Karyawan?": {
+      "main": [
+        [ { "node": "Kirim WA ke Karyawan", "type": "main", "index": 0 } ],
+        []
+      ]
+    },
+    "Kirim WA ke Karyawan": {
+      "main": [
+        [ { "node": "Respond OK", "type": "main", "index": 0 } ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
