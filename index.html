@@ -58,7 +58,8 @@
     .msg.warn { background: #fef3c7; color: #92400e; display: block; }
     .footer-link { text-align: center; margin-top: 10px; }
     .footer-link a { color: #6b7280; font-size: 12px; text-decoration: none; cursor: pointer; }
-    input[type="file"] { display: none; }
+    #inputFoto { display: none; }
+    .upper { text-transform: uppercase; }
     label { font-size: 13px; font-weight: 600; color: #374151; display: block; margin-bottom: 6px; }
     input[type="text"], input[type="password"], input[type="date"], select {
       width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid #d1d5db;
@@ -156,6 +157,12 @@
         <div id="viewAlamat" style="margin-bottom:14px; color:#374151;">-</div>
         <label>No. HP</label>
         <div id="viewHp" style="margin-bottom:14px; color:#374151;">-</div>
+        <label>Jabatan</label>
+        <div id="viewJabatan" style="margin-bottom:14px; color:#374151;">-</div>
+        <label>Status Aktif</label>
+        <div id="viewStatusAktif" style="margin-bottom:14px; color:#374151;">-</div>
+        <label>Tanggal Bergabung</label>
+        <div id="viewTanggalGabung" style="margin-bottom:14px; color:#374151;">-</div>
         <div id="viewFotoKtpWrap" style="display:none;">
           <label>Foto KTP</label>
           <a id="viewFotoKtpLink" href="#" target="_blank" style="color:#0f766e; font-size:13px;">Lihat foto KTP</a>
@@ -163,14 +170,27 @@
       </div>
 
       <div id="biodataEditable" class="card" style="display:none;">
+        <label>ID Karyawan</label>
+        <input type="text" id="bId" disabled style="background:#f3f4f6; color:#6b7280;">
+        <label>Nama Lengkap</label>
+        <input type="text" id="bNama" class="upper" oninput="this.value = this.value.toUpperCase()">
         <label>NIK KTP</label>
-        <input type="text" id="bNik" maxlength="16" inputmode="numeric">
+        <input type="text" id="bNik" maxlength="16" inputmode="numeric" class="upper" oninput="this.value = this.value.toUpperCase()">
         <label>Foto KTP</label>
         <input type="file" id="bFotoKtp" accept="image/*" style="display:block; margin-bottom:16px;">
         <label>Alamat Tinggal</label>
-        <input type="text" id="bAlamat">
+        <input type="text" id="bAlamat" class="upper" oninput="this.value = this.value.toUpperCase()">
         <label>No. HP</label>
-        <input type="text" id="bHp" inputmode="tel">
+        <input type="text" id="bHp" inputmode="tel" class="upper" oninput="this.value = this.value.toUpperCase()">
+        <label>Jabatan</label>
+        <select id="bJabatan"></select>
+        <label>Status Aktif</label>
+        <select id="bStatusAktif">
+          <option value="AKTIF">AKTIF</option>
+          <option value="NONAKTIF">NONAKTIF</option>
+        </select>
+        <label>Tanggal Bergabung</label>
+        <input type="date" id="bTanggalGabung">
         <div id="biodataMsg" class="msg"></div>
         <p style="font-size:12px; color:#92400e; background:#fef3c7; padding:10px 12px; border-radius:8px;">
           Perhatian: setelah disimpan, data ini akan <b>terkunci otomatis</b> dan tidak bisa diedit lagi kecuali admin membuka kuncinya. Pastikan data sudah benar sebelum menyimpan.
@@ -204,6 +224,7 @@
         <button class="tab-btn" onclick="showTab('tambah', event)" type="button">Tambah Karyawan</button>
         <button class="tab-btn" onclick="showTab('setting', event)" type="button">Setting Lokasi Kantor</button>
         <button class="tab-btn" onclick="showTab('notif', event)" type="button">Notifikasi WhatsApp</button>
+        <button class="tab-btn" onclick="showTab('jabatan', event)" type="button">Kelola Jabatan</button>
       </div>
 
       <div id="tab-rekap" class="tab-content active">
@@ -236,13 +257,19 @@
 
       <div id="tab-tambah" class="tab-content">
         <div class="card">
-          <label>ID Karyawan</label><input type="text" id="fId" placeholder="Contoh: KRY001">
-          <label>Nama Lengkap</label><input type="text" id="fNama">
-          <label>NIK KTP</label><input type="text" id="fNik" maxlength="16" inputmode="numeric">
+          <label>ID Karyawan</label><input type="text" id="fId" placeholder="Contoh: KRY001" class="upper" oninput="this.value = this.value.toUpperCase()">
+          <label>Nama Lengkap</label><input type="text" id="fNama" class="upper" oninput="this.value = this.value.toUpperCase()">
+          <label>NIK KTP</label><input type="text" id="fNik" maxlength="16" inputmode="numeric" class="upper" oninput="this.value = this.value.toUpperCase()">
           <label>Foto KTP</label><input type="file" id="fFotoKtp" accept="image/*">
-          <label>Alamat Tinggal</label><input type="text" id="fAlamat">
-          <label>No. HP</label><input type="text" id="fHp" inputmode="tel">
-          <label>Jabatan</label><input type="text" id="fJabatan">
+          <label>Alamat Tinggal</label><input type="text" id="fAlamat" class="upper" oninput="this.value = this.value.toUpperCase()">
+          <label>No. HP</label><input type="text" id="fHp" inputmode="tel" class="upper" oninput="this.value = this.value.toUpperCase()">
+          <label>Jabatan</label><select id="fJabatan"></select>
+          <label>Status Aktif</label>
+          <select id="fStatusAktif">
+            <option value="AKTIF">AKTIF</option>
+            <option value="NONAKTIF">NONAKTIF</option>
+          </select>
+          <label>Tanggal Bergabung</label><input type="date" id="fTanggalGabung">
           <label>PIN Login (4-6 digit)</label><input type="text" id="fPin" inputmode="numeric" maxlength="6">
           <div id="tambahMsg" class="msg"></div>
           <button class="btn btn-primary" style="margin-top:14px;" onclick="tambahKaryawan()" type="button">Simpan Karyawan</button>
@@ -272,6 +299,24 @@
           <button class="btn btn-primary" style="margin-top:14px;" onclick="simpanNotifikasi()" type="button">Simpan</button>
           <button class="btn secondary" style="margin-top:14px; margin-left:8px; width:auto;" onclick="tesNotif()" type="button">Tes Kirim Notifikasi</button>
           <p style="font-size:12px; color:#6b7280; margin-top:14px;">Setelah disimpan, setiap ada absen, Apps Script akan mengirim data ke webhook n8n di atas.</p>
+        </div>
+      </div>
+
+      <div id="tab-jabatan" class="tab-content">
+        <div class="card">
+          <label>Tambah Jabatan Baru</label>
+          <div style="display:flex; gap:10px;">
+            <input type="text" id="jNamaBaru" placeholder="Contoh: Kasir Senior" style="margin-bottom:0;">
+            <button class="btn btn-primary inline" onclick="tambahJabatanUI()" type="button">Tambah</button>
+          </div>
+          <div id="jabatanMsg" class="msg" style="margin-top:12px;"></div>
+          <div class="table-wrap" style="margin-top:16px;">
+            <table>
+              <thead><tr><th>Nama Jabatan</th><th>Aksi</th></tr></thead>
+              <tbody id="jabatanBody"></tbody>
+            </table>
+          </div>
+          <p style="font-size:12px; color:#6b7280; margin-top:14px;">Daftar ini yang muncul sebagai pilihan dropdown Jabatan di form Tambah Karyawan dan Update Biodata karyawan.</p>
         </div>
       </div>
 
@@ -374,28 +419,53 @@
       document.getElementById('biodataEditable').style.display = 'none';
       fotoKtpBaruBase64 = null;
 
-      callServer('getBiodataKaryawan', { idKaryawan: karyawan.idKaryawan }).then(function (res) {
+      Promise.all([
+        callServer('getBiodataKaryawan', { idKaryawan: karyawan.idKaryawan }),
+        callServer('getDaftarJabatan')
+      ]).then(function (hasil) {
+        const res = hasil[0];
+        const daftarJabatan = hasil[1];
+
         if (!res.success) {
           alert(res.message);
           showView('absenView');
           return;
         }
         const d = res.data;
+
         if (d.biodataTerkunci) {
           document.getElementById('biodataLocked').style.display = 'block';
           document.getElementById('viewNama').textContent = d.nama || '-';
           document.getElementById('viewNik').textContent = d.nikKtp || '-';
           document.getElementById('viewAlamat').textContent = d.alamat || '-';
           document.getElementById('viewHp').textContent = d.noHp || '-';
+          document.getElementById('viewJabatan').textContent = d.jabatan || '-';
+          document.getElementById('viewStatusAktif').textContent = d.statusAktif || '-';
+          document.getElementById('viewTanggalGabung').textContent = d.tanggalGabung || '-';
           if (d.fotoKtpUrl) {
             document.getElementById('viewFotoKtpWrap').style.display = 'block';
             document.getElementById('viewFotoKtpLink').href = d.fotoKtpUrl;
           }
         } else {
           document.getElementById('biodataEditable').style.display = 'block';
+          document.getElementById('bId').value = d.idKaryawan || '';
+          document.getElementById('bNama').value = d.nama || '';
           document.getElementById('bNik').value = d.nikKtp || '';
           document.getElementById('bAlamat').value = d.alamat || '';
           document.getElementById('bHp').value = d.noHp || '';
+          document.getElementById('bTanggalGabung').value = d.tanggalGabung || '';
+
+          const selJabatan = document.getElementById('bJabatan');
+          selJabatan.innerHTML = '';
+          daftarJabatan.forEach(function (j) {
+            const opt = document.createElement('option');
+            opt.value = j;
+            opt.textContent = j;
+            if (j === d.jabatan) opt.selected = true;
+            selJabatan.appendChild(opt);
+          });
+
+          document.getElementById('bStatusAktif').value = d.statusAktif || 'AKTIF';
         }
       });
     }
@@ -416,9 +486,13 @@
     function simpanBiodata() {
       const msg = document.getElementById('biodataMsg');
       const payload = {
+        nama: document.getElementById('bNama').value.trim(),
         nikKtp: document.getElementById('bNik').value.trim(),
         alamat: document.getElementById('bAlamat').value.trim(),
-        noHp: document.getElementById('bHp').value.trim()
+        noHp: document.getElementById('bHp').value.trim(),
+        jabatan: document.getElementById('bJabatan').value,
+        statusAktif: document.getElementById('bStatusAktif').value,
+        tanggalBergabung: document.getElementById('bTanggalGabung').value
       };
       if (fotoKtpBaruBase64) payload.fotoKtpBase64 = fotoKtpBaruBase64;
 
@@ -577,6 +651,7 @@
             loadKaryawan();
             loadSetting();
             loadNotifikasi();
+            loadJabatanList();
           } else {
             msg.textContent = res.message;
             msg.style.display = 'block';
@@ -655,7 +730,9 @@
         nikKtp: document.getElementById('fNik').value.trim(),
         alamat: document.getElementById('fAlamat').value.trim(),
         noHp: document.getElementById('fHp').value.trim(),
-        jabatan: document.getElementById('fJabatan').value.trim(),
+        jabatan: document.getElementById('fJabatan').value,
+        statusAktif: document.getElementById('fStatusAktif').value,
+        tanggalBergabung: document.getElementById('fTanggalGabung').value,
         pin: document.getElementById('fPin').value.trim()
       };
       if (!payload.idKaryawan || !payload.nama || !payload.pin) {
@@ -685,7 +762,8 @@
           msg.textContent = res.message;
           msg.style.display = 'block';
           if (res.success) {
-            ['fId','fNama','fNik','fAlamat','fHp','fJabatan','fPin'].forEach(id => document.getElementById(id).value = '');
+            ['fId','fNama','fNik','fAlamat','fHp','fPin','fTanggalGabung'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('fStatusAktif').value = 'AKTIF';
             document.getElementById('fFotoKtp').value = '';
             loadKaryawan();
           }
@@ -752,6 +830,58 @@
           msg.className = 'msg error';
           msg.textContent = 'Gagal: ' + err.message;
         });
+    }
+
+    // ================== KELOLA JABATAN (master data) ==================
+    function loadJabatanList() {
+      callServer('getDaftarJabatan').then(function (daftar) {
+        // isi tabel kelola jabatan
+        const tbody = document.getElementById('jabatanBody');
+        tbody.innerHTML = '';
+        daftar.forEach(function (j) {
+          tbody.innerHTML += `<tr>
+            <td>${j}</td>
+            <td><button class="btn secondary inline" onclick="hapusJabatanUI('${j}')" type="button">Hapus</button></td>
+          </tr>`;
+        });
+
+        // isi juga dropdown Jabatan di form Tambah Karyawan
+        const sel = document.getElementById('fJabatan');
+        if (sel) {
+          const nilaiSekarang = sel.value;
+          sel.innerHTML = '';
+          daftar.forEach(function (j) {
+            const opt = document.createElement('option');
+            opt.value = j;
+            opt.textContent = j;
+            sel.appendChild(opt);
+          });
+          if (daftar.includes(nilaiSekarang)) sel.value = nilaiSekarang;
+        }
+      });
+    }
+
+    function tambahJabatanUI() {
+      const input = document.getElementById('jNamaBaru');
+      const msg = document.getElementById('jabatanMsg');
+      const nama = input.value.trim();
+      if (!nama) return;
+      callServer('tambahJabatan', { nama: nama }).then(function (res) {
+        msg.className = res.success ? 'msg ok' : 'msg error';
+        msg.textContent = res.message;
+        msg.style.display = 'block';
+        if (res.success) {
+          input.value = '';
+          loadJabatanList();
+        }
+      });
+    }
+
+    function hapusJabatanUI(nama) {
+      if (!confirm('Hapus jabatan "' + nama + '" dari daftar?')) return;
+      callServer('hapusJabatan', { nama: nama }).then(function () {
+        loadJabatanList();
+      });
     }
   </script>
 </body>
